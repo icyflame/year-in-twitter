@@ -36,7 +36,7 @@ type BearerToken struct {
 
 func main() {
 
-    TEMPLATE_FILE := "template.html"
+    TEMPLATE_FILE := "template3.html"
     // Ref time: Mon Jan 2 15:04:05 MST 2006
     begin, _ := time.Parse("2006-01-02", "2017-01-01")
     // begin, _ := time.Parse("2006-01-02", "2017-12-01")
@@ -92,7 +92,7 @@ func main() {
         if (r.Method == "GET") {
             log.Printf("GET req recd");
 
-            w.Header().Set("Content-Type", "application/html; charset=utf-8")
+            w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
             b, err := ioutil.ReadFile("test.html")
 
