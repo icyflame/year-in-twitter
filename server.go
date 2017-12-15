@@ -5,6 +5,8 @@ import "github.com/joho/godotenv"
 import "github.com/dghubble/go-twitter/twitter"
 import "golang.org/x/oauth2"
 
+import "github.com/cbroglie/mustache"
+
 import b64 "encoding/base64"
 import "encoding/json"
 
@@ -53,8 +55,6 @@ func main() {
         data := os.Getenv("CONSUMER_KEY") + ":" + os.Getenv("CONSUMER_SECRET")
         b64_token := b64.StdEncoding.EncodeToString([]byte(data))
 
-        log.Printf("%s", b64_token)
-
         req.Header.Add("Authorization", "Basic " + b64_token)
         req.Header.Add("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
 
@@ -65,26 +65,20 @@ func main() {
         if err != nil {
             log.Fatal(err)
         } else {
-            log.Printf("%s", resp)
             bearer, err := ioutil.ReadAll(resp.Body)
             if err != nil {
                 log.Fatal(err)
             } else {
-                log.Printf("Bearer token: %s", bearer)
-
                 err := json.Unmarshal(bearer, &tok)
 
                 if err != nil {
                     log.Fatal(err)
                 } else {
-                    log.Printf("%+v", tok)
-                    log.Printf("%s", tok.Access_Token)
+                    log.Printf("Access token received")
                 }
             }
         }
     }
-
-    log.Printf("Access token: %s", tok.Access_Token);
 
     config := &oauth2.Config{}
     token := &oauth2.Token{AccessToken: tok.Access_Token}
@@ -134,7 +128,7 @@ func main() {
                 userTimelineParams := &twitter.UserTimelineParams{ScreenName: handle,Count: 200,IncludeRetweets: &incRT}
 
                 if (last_tw_id > 0) {
-                    userTimelineParams.MaxID = last_tw_id;
+                    userTimelineParams.MaxID = last_tw_id - 1;
                 }
 
                 tweets, _, err := client.Timelines.UserTimeline(userTimelineParams)
@@ -185,13 +179,13 @@ func main() {
                         }
                     }
                 }
-
-                log.Printf("Word count: %d", word_count)
-                log.Printf("Number of tweets: %d", num_tweets)
-                log.Printf("First tweet in this period: %d", first_tw_in_period.ID)
-                log.Printf("Tweet with maximum favourites: %d", maxFav.ID)
-                log.Printf("Tweet with maximum Retweets: %d", maxRT.ID)
             }
+
+            log.Printf("Word count: %d", word_count)
+            log.Printf("Number of tweets: %d", num_tweets)
+            log.Printf("First tweet in this period: %d", first_tw_in_period.ID)
+            log.Printf("Tweet with maximum favourites: %d", maxFav.ID)
+            log.Printf("Tweet with maximum Retweets: %d", maxRT.ID)
 
             fmt.Fprintf(w, "Hello, %s. You wrote %d tweets this year, with a total of %d words!", handle, num_tweets, word_count)
         } else {
