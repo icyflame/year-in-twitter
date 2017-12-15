@@ -16,6 +16,7 @@ import "fmt"
 import "log"
 import "io/ioutil"
 import "strings"
+import "strconv"
 
 import "time"
 
@@ -35,6 +36,7 @@ type BearerToken struct {
 
 func main() {
 
+    TEMPLATE_FILE := "template.html"
     // Ref time: Mon Jan 2 15:04:05 MST 2006
     begin, _ := time.Parse("2006-01-02", "2017-01-01")
     // begin, _ := time.Parse("2006-01-02", "2017-12-01")
@@ -90,7 +92,7 @@ func main() {
         if (r.Method == "GET") {
             log.Printf("GET req recd");
 
-            w.Header().Set("Content-Type", "text/html; charset=utf-8")
+            w.Header().Set("Content-Type", "application/html; charset=utf-8")
 
             b, err := ioutil.ReadFile("test.html")
 
@@ -104,6 +106,7 @@ func main() {
             r.ParseForm()
 
             log.Printf("POST req recd")
+            w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
             handle := r.PostForm.Get("handle")
 
@@ -187,7 +190,14 @@ func main() {
             log.Printf("Tweet with maximum favourites: %d", maxFav.ID)
             log.Printf("Tweet with maximum Retweets: %d", maxRT.ID)
 
-            fmt.Fprintf(w, "Hello, %s. You wrote %d tweets this year, with a total of %d words!", handle, num_tweets, word_count)
+            context := map[string]string{
+                                            "num_tweets": strconv.Itoa(num_tweets),
+                                            "word_count": strconv.Itoa(word_count),
+                                            "handle": handle,
+                                        }
+            templated_res, _ := mustache.RenderFile(TEMPLATE_FILE, context)
+
+            fmt.Fprintf(w, templated_res)
         } else {
             fmt.Fprintf(w, "Unrecognized method. Only GET / and POST / are supported!");
         }
