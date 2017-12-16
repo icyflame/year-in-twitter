@@ -16,34 +16,41 @@
                 <nav>
                     <ul class="nav nav-pills float-right">
                         <li class="nav-item">
-                            <a class="nav-link active" href="/">Home<span class="sr-only">(current)</span></a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link" href="https://www.siddharthkannan.in" target="_blank">About</a>
                         </li>
                     </ul>
                 </nav>
-                <h3 class="text-muted">2017 on Twitter</h3>
+                <h3>2017 on Twitter</h3>
             </header>
 
             <main role="main">
 
             <div class="jumbotron">
-                <h1 class="display-3">Hey, @{{handle}}</h1>
-                <p class="lead">This is your 2017 on Twitter. You wrote {{word_count}} words in {{num_tweets}} tweets this year</p>
-                <p><a class="btn btn-lg btn-success" href="#" role="button">Sign up today</a></p>
+                <h1 class="display-3">
+                    @{{handle}}'s 2017 on Twitter
+                </h1>
+                <h3 class="lead">
+                    @{{handle}} wrote {{word_count}}
+                    words in {{num_tweets}} tweets this year
+                </h3>
             </div>
 
             <div class="row marketing">
                 <div class="col-lg-6">
-                    <h4>Subheading</h4>
-                    <p>Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum.</p>
+                    <h4>Most Favorited with {{most_faved}} favorites</h4>
+                    <div>
+                        {{{most_liked_tw}}}
+                    </div>
 
-                    <h4>Subheading</h4>
-                    <p>Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis consectetur purus sit amet fermentum.</p>
+                    <h4>Most Retweeted with {{most_rted}} retweets</h4>
+                    <div>
+                        {{{most_rt_tw}}}
+                    </div>
 
-                    <h4>Subheading</h4>
-                    <p>Maecenas sed diam eget risus varius blandit sit amet non magna.</p>
+                    <h4>First tweet in 2017</h4>
+                    <div>
+                        {{{first_tw}}}
+                    </div>
                 </div>
 
                 <div class="col-lg-6">
@@ -61,7 +68,8 @@
             </main>
 
             <footer class="footer">
-                <p>&copy; Company 2017</p>
+                <hr>
+                <p>Siddharth Kannan - Year In Twitter 2017</p>
             </footer>
 
             <!-- Optional JavaScript -->

@@ -25,6 +25,13 @@ type BearerToken struct {
     Access_Token string
 }
 
+func GetOEmbedTw(tw int64, tw_chans chan *twitter.OEmbedTweet, client *twitter.Client) {
+    log.Printf("%d", tw)
+    statusOembedParams := &twitter.StatusOEmbedParams{ID: tw, MaxWidth: 500}
+    oembed, _, _ := client.Statuses.OEmbed(statusOembedParams)
+    tw_chans <- oembed
+}
+
 /*
 * 1. Number of words in total
 * 2. Most liked tweet
@@ -190,11 +197,32 @@ func main() {
             log.Printf("Tweet with maximum favourites: %d", maxFav.ID)
             log.Printf("Tweet with maximum Retweets: %d", maxRT.ID)
 
+            id_list := []int64{ first_tw_in_period.ID, maxFav.ID, maxRT.ID }
+
+            tweet_chans := make(chan *twitter.OEmbedTweet)
+
+            for _, tw_id := range id_list {
+                go GetOEmbedTw(tw_id, tweet_chans, client)
+            }
+
+            ftw := <-tweet_chans
+            mft := <-tweet_chans
+            mrt := <-tweet_chans
+
+            log.Printf("%+v", tweet_chans)
+            log.Printf("%+v", id_list)
+
             context := map[string]string{
                                             "num_tweets": strconv.Itoa(num_tweets),
                                             "word_count": strconv.Itoa(word_count),
                                             "handle": handle,
+                                            "most_liked_tw": mft.HTML,
+                                            "most_rt_tw": mrt.HTML,
+                                            "first_tw": ftw.HTML,
+                                            "most_faved": strconv.Itoa(maxFav.FavoriteCount),
+                                            "most_rted": strconv.Itoa(maxRT.RetweetCount),
                                         }
+
             templated_res, _ := mustache.RenderFile(TEMPLATE_FILE, context)
 
             fmt.Fprintf(w, templated_res)
