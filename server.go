@@ -52,6 +52,23 @@ func GetOEmbedTw(tw int64, tw_chans chan OEmbedWithId, client *twitter.Client) {
 
 func main() {
 
+    months := []string{
+                        "January",
+                        "February",
+                        "March",
+                        "April",
+                        "May",
+                        "June",
+                        "July",
+                        "August",
+                        "September",
+                        "October",
+                        "November",
+                        "December",
+                    }
+
+    log.Printf("Months: ", months)
+
     TEMPLATE_FILE := "template.html"
     // Ref time: Mon Jan 2 15:04:05 MST 2006
     begin, _ := time.Parse("2006-01-02", "2017-01-01")
@@ -104,7 +121,14 @@ func main() {
     httpClient := config.Client(oauth2.NoContext, token)
     client := twitter.NewClient(httpClient)
 
+    http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./public"))))
+
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+
+        if (r.URL.Path != "/") {
+            fmt.Fprintf(w, r.URL.Path + " is not supported! Only GET / and POST / is supported right now.");
+            return;
+        }
 
         if (r.Method == "GET") {
             log.Printf("GET req recd");
@@ -141,6 +165,10 @@ func main() {
             last_tw_id = 0
             var first_tw_in_period twitter.Tweet;
 
+            monthMap := map[string]int{}
+            weekdayMap := map[string]int{}
+            hourMap := map[int]int{}
+
             log.Printf("Searching for all tweets before %s", begin)
 
             for last_tw_time.After(begin) {
@@ -158,6 +186,8 @@ func main() {
                 } else if len(tweets) > 0 {
 
                     first_tw := tweets[0]
+                    first_tw_time, _ := time.Parse(time.RubyDate, first_tw.CreatedAt)
+
                     last_tw := tweets[len(tweets)-1]
 
                     last_tw_time, _ = time.Parse(time.RubyDate, last_tw.CreatedAt)
@@ -165,7 +195,7 @@ func main() {
 
                     log.Printf("Recd %d tweets; uptill %s (From ID: %d, To ID: %d); ", len(tweets), last_tw_time, tweets[0].ID, last_tw_id)
 
-                    whole_set := last_tw_time.After(begin) && first_tw.Before(end);
+                    whole_set := last_tw_time.After(begin) && first_tw_time.Before(end)
 
                     if (whole_set) {
                         num_tweets += len(tweets)
@@ -195,8 +225,8 @@ func main() {
                         }
 
                         if (!whole_set) {
-                            num_tweets++;
-                            first_tw_in_period = tweet;
+                            num_tweets++
+                            first_tw_in_period = tweet
                         }
 
                         word_count += len(strings.Fields(tweet.Text))
@@ -208,6 +238,10 @@ func main() {
                         if (tweet.FavoriteCount > maxFav.FavoriteCount) {
                             maxFav = tweet
                         }
+
+                        monthMap[this_tw_time.Month().String()] += 1
+                        weekdayMap[this_tw_time.Weekday().String()] += 1
+                        hourMap[this_tw_time.Hour()] += 1
                     }
                 }
             }
@@ -217,6 +251,9 @@ func main() {
             log.Printf("First tweet in this period: %d", first_tw_in_period.ID)
             log.Printf("Tweet with maximum favourites: %d", maxFav.ID)
             log.Printf("Tweet with maximum Retweets: %d", maxRT.ID)
+            log.Printf("Month map: %+v", monthMap)
+            log.Printf("Weekday map: %+v", weekdayMap)
+            log.Printf("Hour map: %+v", hourMap)
 
             id_list := []int64{ first_tw_in_period.ID, maxFav.ID, maxRT.ID }
 
