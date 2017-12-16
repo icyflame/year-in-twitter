@@ -5,8 +5,6 @@ import "github.com/joho/godotenv"
 import "github.com/dghubble/go-twitter/twitter"
 import "golang.org/x/oauth2"
 
-import "github.com/cbroglie/mustache"
-
 import b64 "encoding/base64"
 import "encoding/json"
 
@@ -16,7 +14,10 @@ import "fmt"
 import "log"
 import "io/ioutil"
 import "strings"
-import "strconv"
+
+import "html/template"
+
+import "bytes"
 
 import "time"
 
@@ -51,7 +52,7 @@ func GetOEmbedTw(tw int64, tw_chans chan OEmbedWithId, client *twitter.Client) {
 
 func main() {
 
-    TEMPLATE_FILE := "template3.html"
+    TEMPLATE_FILE := "template4.html"
     // Ref time: Mon Jan 2 15:04:05 MST 2006
     begin, _ := time.Parse("2006-01-02", "2017-01-01")
     // begin, _ := time.Parse("2006-01-02", "2017-12-01")
@@ -231,22 +232,38 @@ func main() {
             log.Printf("%+v", tweet_chans)
             log.Printf("%+v", id_list)
 
-            context := map[string]string{
-                                            "num_tweets": strconv.Itoa(num_tweets),
-                                            "word_count": strconv.Itoa(word_count),
-                                            "handle": handle,
-                                            "most_liked_tw": mft.HTML,
-                                            "most_rt_tw": mrt.HTML,
-                                            "first_tw": ftw.HTML,
-                                            "most_faved": strconv.Itoa(maxFav.FavoriteCount),
-                                            "most_rted": strconv.Itoa(maxRT.RetweetCount),
-                                        }
-
             log.Printf("%s", mft.HTML)
 
-            templated_res, _ := mustache.RenderFile(TEMPLATE_FILE, context)
+            new_temp, err := template.ParseFiles(TEMPLATE_FILE)
 
-            fmt.Fprintf(w, templated_res)
+            if err != nil {
+                log.Fatal(err)
+            } else {
+                data_obj := struct {
+                    Num_Tweets int
+                    Word_Count int
+                    Handle string
+                    Most_Fav template.HTML
+                    Most_RT template.HTML
+                    First_Tweet template.HTML
+                    Most_Fav_Count int
+                    Most_RT_Count int
+                }{
+                    num_tweets,
+                    word_count,
+                    handle,
+                    template.HTML(mft.HTML),
+                    template.HTML(mrt.HTML),
+                    template.HTML(ftw.HTML),
+                    maxFav.FavoriteCount,
+                    maxRT.RetweetCount,
+                }
+
+                var templated_res bytes.Buffer
+                new_temp.Execute(&templated_res, data_obj)
+
+                fmt.Fprint(w, templated_res.String())
+            }
         } else {
             fmt.Fprintf(w, "Unrecognized method. Only GET / and POST / are supported!");
         }
