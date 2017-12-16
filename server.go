@@ -25,11 +25,19 @@ type BearerToken struct {
     Access_Token string
 }
 
-func GetOEmbedTw(tw int64, tw_chans chan *twitter.OEmbedTweet, client *twitter.Client) {
+type OEmbedWithId struct {
+    ID int64
+    Tweet *twitter.OEmbedTweet
+}
+
+func GetOEmbedTw(tw int64, tw_chans chan OEmbedWithId, client *twitter.Client) {
     log.Printf("%d", tw)
     statusOembedParams := &twitter.StatusOEmbedParams{ID: tw, MaxWidth: 500}
     oembed, _, _ := client.Statuses.OEmbed(statusOembedParams)
-    tw_chans <- oembed
+    var oembed_id OEmbedWithId
+    oembed_id.ID = tw
+    oembed_id.Tweet = oembed
+    tw_chans <- oembed_id
 }
 
 /*
@@ -199,15 +207,26 @@ func main() {
 
             id_list := []int64{ first_tw_in_period.ID, maxFav.ID, maxRT.ID }
 
-            tweet_chans := make(chan *twitter.OEmbedTweet)
+            tweet_chans := make(chan OEmbedWithId)
 
             for _, tw_id := range id_list {
                 go GetOEmbedTw(tw_id, tweet_chans, client)
             }
 
-            ftw := <-tweet_chans
-            mft := <-tweet_chans
-            mrt := <-tweet_chans
+            tweet1 := <-tweet_chans
+            tweet2 := <-tweet_chans
+            tweet3 := <-tweet_chans
+
+            tw_coll := []OEmbedWithId{tweet1, tweet2, tweet3}
+            reqd_tweets := map[int64]*twitter.OEmbedTweet{}
+
+            for _, t := range tw_coll {
+                reqd_tweets[t.ID] = t.Tweet
+            }
+
+            ftw := reqd_tweets[first_tw_in_period.ID]
+            mft := reqd_tweets[maxFav.ID]
+            mrt := reqd_tweets[maxRT.ID]
 
             log.Printf("%+v", tweet_chans)
             log.Printf("%+v", id_list)
@@ -222,6 +241,8 @@ func main() {
                                             "most_faved": strconv.Itoa(maxFav.FavoriteCount),
                                             "most_rted": strconv.Itoa(maxRT.RetweetCount),
                                         }
+
+            log.Printf("%s", mft.HTML)
 
             templated_res, _ := mustache.RenderFile(TEMPLATE_FILE, context)
 
