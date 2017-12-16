@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
     <head>
-        <title>{{handle}}'s 2017 on Twitter</title>
+        <title>{{.Handle}}'s 2017 on Twitter</title>
         <!-- Required meta tags -->
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -10,21 +10,72 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
     </head>
     <body style="margin:40px;">
-        <div class="container-full">
-            <h1 class="hero-unit">Hey, @{{handle}}. This is your 2017 on Twitter!</h1>                
 
-            <h3>
-                Total tweets: {{num_tweets}}
-            </h3>
-            <h3>
-                Word count: {{word_count}}
-            </h3>
-        </div>
+        <div class="container">
+            <header class="header clearfix">
+                <nav>
+                    <ul class="nav nav-pills float-right">
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://www.siddharthkannan.in" target="_blank">About</a>
+                        </li>
+                    </ul>
+                </nav>
+                <h3>2017 on Twitter</h3>
+            </header>
 
-        <!-- Optional JavaScript -->
-        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-        <!-- <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script> -->
-        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script> -->
-        <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script> -->
+            <main role="main">
+
+            <div class="jumbotron">
+                <h1 class="display-3">
+                    @{{.Handle}}'s 2017 on Twitter
+                </h1>
+                <h3 class="lead">
+                    @{{.Handle}} wrote {{.Word_Count}}
+                    words in {{.Num_Tweets}} tweets this year
+                </h3>
+            </div>
+
+            <div class="row marketing">
+                <div class="col-lg-6">
+                    <h4>Most Favorited with {{.Most_Fav_Count}} favorites</h4>
+                    <div>
+                        {{.Most_Fav}}
+                    </div>
+
+                    <h4>Most Retweeted with {{.Most_RT_Count}} retweets</h4>
+                    <div>
+                        {{.Most_RT}}
+                    </div>
+
+                    <h4>First tweet in 2017</h4>
+                    <div>
+                        {{.First_Tweet}}
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <h4>Subheading</h4>
+                    <p>Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum.</p>
+
+                    <h4>Subheading</h4>
+                    <p>Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis consectetur purus sit amet fermentum.</p>
+
+                    <h4>Subheading</h4>
+                    <p>Maecenas sed diam eget risus varius blandit sit amet non magna.</p>
+                </div>
+            </div>
+
+            </main>
+
+            <footer class="footer">
+                <hr>
+                <p>Siddharth Kannan - Year In Twitter 2017</p>
+            </footer>
+
+            <!-- Optional JavaScript -->
+            <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+            <!-- <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script> -->
+            <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script> -->
+            <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script> -->
     </body>
 </html>

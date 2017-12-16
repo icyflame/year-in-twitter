@@ -52,7 +52,7 @@ func GetOEmbedTw(tw int64, tw_chans chan OEmbedWithId, client *twitter.Client) {
 
 func main() {
 
-    TEMPLATE_FILE := "template4.html"
+    TEMPLATE_FILE := "template.html"
     // Ref time: Mon Jan 2 15:04:05 MST 2006
     begin, _ := time.Parse("2006-01-02", "2017-01-01")
     // begin, _ := time.Parse("2006-01-02", "2017-12-01")
