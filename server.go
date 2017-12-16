@@ -55,6 +55,7 @@ func main() {
     TEMPLATE_FILE := "template.html"
     // Ref time: Mon Jan 2 15:04:05 MST 2006
     begin, _ := time.Parse("2006-01-02", "2017-01-01")
+    end, _ := time.Parse("2006-01-02", "2018-01-01")
     // begin, _ := time.Parse("2006-01-02", "2017-12-01")
 
     err := godotenv.Load()
@@ -156,6 +157,7 @@ func main() {
                     log.Fatal(err);
                 } else if len(tweets) > 0 {
 
+                    first_tw := tweets[0]
                     last_tw := tweets[len(tweets)-1]
 
                     last_tw_time, _ = time.Parse(time.RubyDate, last_tw.CreatedAt)
@@ -163,7 +165,7 @@ func main() {
 
                     log.Printf("Recd %d tweets; uptill %s (From ID: %d, To ID: %d); ", len(tweets), last_tw_time, tweets[0].ID, last_tw_id)
 
-                    whole_set := last_tw_time.After(begin);
+                    whole_set := last_tw_time.After(begin) && first_tw.Before(end);
 
                     if (whole_set) {
                         num_tweets += len(tweets)
@@ -179,7 +181,17 @@ func main() {
                     for _, tweet := range tweets {
                         this_tw_time, _ := time.Parse(time.RubyDate, tweet.CreatedAt)
                         if !whole_set && this_tw_time.Before(begin) {
+                            // If this tweet is before the beginning of this
+                            // period, then every tweet after WILL definitely be
+                            // before this period and not of any interest to us.
                             break;
+                        }
+
+                        if (!whole_set && this_tw_time.After(end)) {
+                            // If this tweet is after the end of the period,
+                            // then we should skip this tweet and keep checking
+                            // older tweets
+                            continue;
                         }
 
                         if (!whole_set) {
@@ -228,11 +240,6 @@ func main() {
             ftw := reqd_tweets[first_tw_in_period.ID]
             mft := reqd_tweets[maxFav.ID]
             mrt := reqd_tweets[maxRT.ID]
-
-            log.Printf("%+v", tweet_chans)
-            log.Printf("%+v", id_list)
-
-            log.Printf("%s", mft.HTML)
 
             new_temp, err := template.ParseFiles(TEMPLATE_FILE)
 
