@@ -110,7 +110,7 @@ func main() {
 
             w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-            b, err := ioutil.ReadFile("test.html")
+            b, err := ioutil.ReadFile("index.html")
 
             if err != nil {
                 log.Fatal(err)

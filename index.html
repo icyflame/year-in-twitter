@@ -27,43 +27,17 @@
 
             <div class="jumbotron">
                 <h1 class="display-3">
-                    @{{.Handle}}'s 2017 on Twitter
+                    Find a handle's 2017 on Twitter
                 </h1>
-                <h3 class="lead">
-                    @{{.Handle}} wrote {{.Word_Count}}
-                    words in {{.Num_Tweets}} tweets this year
-                </h3>
             </div>
 
-            <div class="row marketing">
-                <div class="col-lg-6">
-                    <h4>Most Favorited with {{.Most_Fav_Count}} favorites</h4>
-                    <div>
-                        {{.Most_Fav}}
-                    </div>
-
-                    <h4>Most Retweeted with {{.Most_RT_Count}} retweets</h4>
-                    <div>
-                        {{.Most_RT}}
-                    </div>
-
-                    <h4>First tweet in 2017</h4>
-                    <div>
-                        {{.First_Tweet}}
-                    </div>
-                </div>
-
-                <div class="col-lg-6">
-                    <h4>Subheading</h4>
-                    <p>Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum.</p>
-
-                    <h4>Subheading</h4>
-                    <p>Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis consectetur purus sit amet fermentum.</p>
-
-                    <h4>Subheading</h4>
-                    <p>Maecenas sed diam eget risus varius blandit sit amet non magna.</p>
-                </div>
-            </div>
+            <p>
+            Enter your Twitter handle
+            </p>
+                <form method="POST">
+                    <input type="text" name="handle">
+                    <input type="submit" value="Generate year on Twitter">
+                </form>
 
             </main>
 
