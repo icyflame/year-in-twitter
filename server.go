@@ -67,7 +67,17 @@ func main() {
                         "December",
                     }
 
-    log.Printf("Months: ", months)
+    weekdays := []string{
+                            "Monday",
+                            "Tuesday",
+                            "Wednesday",
+                            "Thursday",
+                            "Friday",
+                            "Saturday",
+                            "Sunday",
+                        }
+
+    log.Printf("Months: %s", strings.Join(months, ","))
 
     TEMPLATE_FILE := "template.html"
     // Ref time: Mon Jan 2 15:04:05 MST 2006
@@ -280,6 +290,17 @@ func main() {
 
             new_temp, err := template.ParseFiles(TEMPLATE_FILE)
 
+            monthValues := make([]int, 12)
+
+            for ind, month := range months {
+                monthValues[ind] = monthMap[month]
+            }
+
+            weekdayValues := make([]int, 7)
+            for ind, weekday := range weekdays {
+                weekdayValues[ind] = weekdayMap[weekday]
+            }
+
             if err != nil {
                 log.Fatal(err)
             } else {
@@ -292,6 +313,10 @@ func main() {
                     First_Tweet template.HTML
                     Most_Fav_Count int
                     Most_RT_Count int
+                    MonthNames []string
+                    MonthValues []int
+                    WeekdayNames []string
+                    WeekdayValues []int
                 }{
                     num_tweets,
                     word_count,
@@ -301,6 +326,10 @@ func main() {
                     template.HTML(ftw.HTML),
                     maxFav.FavoriteCount,
                     maxRT.RetweetCount,
+                    months,
+                    monthValues,
+                    weekdays,
+                    weekdayValues,
                 }
 
                 var templated_res bytes.Buffer
