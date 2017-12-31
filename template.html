@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
     <head>
-        <title>{{.Handle}}'s 2017 on Twitter</title>
+        <title>{{.Handle}} 's 2017 on Twitter</title>
         <!-- Required meta tags -->
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -131,34 +131,20 @@
             <script>
 			
                 var data = {
-                    labels: [
-                        'resilience', 'maintainability', 'accessibility',
-                        'uptime', 'functionality', 'impact'
-                    ],
+                    labels: {{.MonthNames}},
                     series: [
                     {
-                        label: '2012',
-                        values: [4, 8, 15, 16, 23, 42]
-                    },
-                    {
-                        label: '2013',
-                        values: [12, 43, 22, 11, 73, 25]
-                    },
-                    {
-                        label: '2014',
-                        values: [31, 28, 14, 8, 15, 21]
-                    },]
+                        label: '',
+                        values: {{.MonthValues}}
+                    }]
                 };
 
                 var weeks = {
-                    labels: [
-                        'resilience', 'maintainability', 'accessibility',
-                        'uptime', 'functionality', 'impact'
-                    ],
+                    labels: {{.WeekdayNames}},
                     series: [
                     {
-                        label: '2012',
-                        values: [4, 8, 15, 16, 23, 42]
+                        label: '',
+                        values: {{.WeekdayValues}}
                     },]
                 };
 
