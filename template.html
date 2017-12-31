@@ -6,39 +6,6 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-        <style>
-        .chart .legend {
-            fill: black;
-            font: 14px sans-serif;
-            text-anchor: start;
-            font-size: 12px;
-        }
-
-        .chart text {
-            fill: white;
-            font: 10px sans-serif;
-            text-anchor: end;
-        }
-
-        .chart .label {
-            fill: black;
-            font: 14px sans-serif;
-            text-anchor: end;
-        }
-
-        .bar:hover {
-            fill: brown;
-        }
-
-        .axis path,
-        .axis line {
-            fill: none;
-            stroke: #000;
-            shape-rendering: crispEdges;
-        }
-
-        </style>
-
         <!-- Bootstrap CSS -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
     </head>
@@ -88,26 +55,15 @@
                     </div>
                 </div>
 
-                <h2>
-                    Tweets by month
-                </h2>
                 <div class="row">
-                    <svg id="month-chart" class="chart">
-                    </svg>
-                </div>
-                <h2>
-                    Tweets by weekday
-                </h2>
-                <div class="row">
-                    <svg id="weekday-chart" class="chart">
-                    </svg>
-                </div>
-                <h2>
-                    Tweets by hour of day (time in UTC)
-                </h2>
-                <div class="row">
-                    <svg id="hours-chart" class="chart">
-                    </svg>
+                    <div class="col-lg-6">
+                        <svg id="month-chart" width="590" height="500">
+                        </svg>
+                    </div>
+                    <div class="col-lg-6">
+                        <svg id="weekday-chart" width="590" height="500">
+                        </svg>
+                    </div>
                 </div>
             </div>
 
@@ -125,34 +81,69 @@
             <!-- jQuery first, then Popper.js, then Bootstrap JS -->
             <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 
-            <script src="https://d3js.org/d3.v3.min.js"></script>
-            <script src="/static/barHorizontalChart.js"></script>
+            <script src="https://d3js.org/d3.v4.min.js"></script>
+            <script src="/static/d3pie.min.js"></script>
 
             <script>
-			
-                var data = {
-                    labels: {{.MonthNames}},
-                    series: [
-                    {
-                        label: '',
-                        values: {{.MonthValues}}
-                    }]
+            var totalCharts = [{
+                names: {{.MonthNames}},
+                vals: {{.MonthValues}},
+                title: "Tweets by month",
+                subtitle: "How much did you tweet each month this year?",
+                target_element: "#month-chart"
+            }, {
+                names: {{.WeekdayNames}},
+                vals: {{.WeekdayValues}},
+                title: "Tweets by weekday",
+                subtitle: "How much did you tweet each day of the week?",
+                target_element: "#weekday-chart"
+            }];
+
+            for (index in totalCharts) {
+                var nv = totalCharts[index];
+                var labs = nv.names;
+                var vals = nv.vals;
+                var content = [ ];
+
+                for (i = 0; i < labs.length; i++) {
+                    content.push({ label: labs[i], value: vals[i] })
+                }
+
+                var config = {
+                    header: {
+                        title: {
+                            text: nv.title,
+                            fontSize: 30
+                        },
+                        subtitle: {
+                            text: nv.subtitle
+                        }
+                    },
+                    size: {
+                        canvasWidth: 590
+                    },
+                    labels: {
+                        outer: {
+                            format: "label-value1"
+                        },
+                        inner: {
+                            hideWhenLessThanPercentage: 15
+                        },
+                        mainLabel: {
+                            fontSize: 15
+                        },
+                        value: {
+                            color: "#333333",
+                            fontSize: 15
+                        }
+                    },
+                    data: {
+                        content: content
+                    }
                 };
-
-                var weeks = {
-                    labels: {{.WeekdayNames}},
-                    series: [
-                    {
-                        label: '',
-                        values: {{.WeekdayValues}}
-                    },]
-                };
-
-                buildHorChart({ data: data, selector: "#month-chart" });
-                buildHorChart({ data: weeks, selector: "#weekday-chart" });
-                buildHorChart({ data: hours, selector: "#hours-chart" });
-
-			</script>
+                var myPie = new d3pie(nv.target_element, config);
+            }
+            </script>
 
 
     </body>
