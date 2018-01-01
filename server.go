@@ -50,13 +50,25 @@ type TemplateContext struct {
 }
 
 func StringifyContext (a TemplateContext) string {
-    return fmt.Sprintf("%v", a);
+    byteStr, _ := json.Marshal(a)
+    return b64.StdEncoding.EncodeToString(byteStr);
 }
 
 func UnstringifyContext (a string) TemplateContext {
+    val, _ := b64.StdEncoding.DecodeString(a)
     var res TemplateContext
-    fmt.Sscanf(a, "%v", &res)
+    err := json.Unmarshal(val, &res)
+    if err != nil {
+        log.Panic(err)
+    }
     return res
+}
+
+func getHTMLFromData(res TemplateContext) string {
+    new_temp, _ := template.ParseFiles(TEMPLATE_FILE)
+    var templated_res bytes.Buffer
+    new_temp.Execute(&templated_res, res)
+    return templated_res.String()
 }
 
 func GetOEmbedTw(tw int64, tw_chans chan OEmbedWithId, client *twitter.Client) {
@@ -205,7 +217,6 @@ func main() {
 
             handle := strings.Replace(r.URL.Path, "/get/", "", 1)
 
-            // TODO: Check if this username's data is already there in redis
             if (redClientExists) {
                 log.Printf("Check if data is in Redis, if it is there then don't do any of the stuff below!")
                 val, err := redClient.Get(handle).Result()
@@ -214,6 +225,8 @@ func main() {
                 if len(val) > 0 {
                     res := UnstringifyContext(val)
                     log.Printf("Retrieved from redis for %s: %v", handle, res)
+                    fmt.Fprintf(w, getHTMLFromData(res))
+                    return
                 }
             }
 
@@ -353,8 +366,6 @@ func main() {
             mrt := reqd_tweets[maxRT.ID]
             ltw := reqd_tweets[last_tw_in_period.ID]
 
-            new_temp, err := template.ParseFiles(TEMPLATE_FILE)
-
             monthValues := make([]int, 12)
 
             for ind, month := range months {
@@ -366,39 +377,33 @@ func main() {
                 weekdayValues[ind] = weekdayMap[weekday]
             }
 
-            if err != nil {
-                log.Fatal(err)
-            } else {
-                data_obj := TemplateContext{
-                    num_tweets,
-                    word_count,
-                    handle,
-                    template.HTML(mft.HTML),
-                    template.HTML(mrt.HTML),
-                    template.HTML(ftw.HTML),
-                    template.HTML(ltw.HTML),
-                    maxFav.FavoriteCount,
-                    maxRT.RetweetCount,
-                    months,
-                    monthValues,
-                    weekdays,
-                    weekdayValues,
-                }
-
-                var templated_res bytes.Buffer
-                new_temp.Execute(&templated_res, data_obj)
-
-                fmt.Fprint(w, templated_res.String())
-                if (redClientExists) {
-                    err := redClient.Set(handle, StringifyContext(data_obj), 0).Err()
-                    if err != nil {
-                        log.Printf("Couldn't write %s's data to Redis: %v", handle, err)
-                    } else {
-                        log.Printf("Wrote %s's data to Redis", handle)
-                    }
-                }
-                return;
+            data_obj := TemplateContext{
+                num_tweets,
+                word_count,
+                handle,
+                template.HTML(mft.HTML),
+                template.HTML(mrt.HTML),
+                template.HTML(ftw.HTML),
+                template.HTML(ltw.HTML),
+                maxFav.FavoriteCount,
+                maxRT.RetweetCount,
+                months,
+                monthValues,
+                weekdays,
+                weekdayValues,
             }
+
+            fmt.Fprint(w, getHTMLFromData(data_obj))
+
+            if (redClientExists) {
+                err := redClient.Set(handle, StringifyContext(data_obj), 0).Err()
+                if err != nil {
+                    log.Printf("Couldn't write %s's data to Redis: %v", handle, err)
+                } else {
+                    log.Printf("Wrote %s's data to Redis", handle)
+                }
+            }
+            return;
         }
 
         fmt.Fprintf(w, r.URL.Path + " is not supported! Only GET / and POST / is supported right now.");
