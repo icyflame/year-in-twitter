@@ -5,6 +5,8 @@ import "github.com/joho/godotenv"
 import "github.com/dghubble/go-twitter/twitter"
 import "golang.org/x/oauth2"
 
+import "github.com/go-redis/redis"
+
 import b64 "encoding/base64"
 import "encoding/json"
 
@@ -29,6 +31,32 @@ type BearerToken struct {
 type OEmbedWithId struct {
     ID int64
     Tweet *twitter.OEmbedTweet
+}
+
+type TemplateContext struct {
+    Num_Tweets int
+    Word_Count int
+    Handle string
+    Most_Fav template.HTML
+    Most_RT template.HTML
+    First_Tweet template.HTML
+    Last_Tweet template.HTML
+    Most_Fav_Count int
+    Most_RT_Count int
+    MonthNames []string
+    MonthValues []int
+    WeekdayNames []string
+    WeekdayValues []int
+}
+
+func StringifyContext (a TemplateContext) string {
+    return fmt.Sprintf("%v", a);
+}
+
+func UnstringifyContext (a string) TemplateContext {
+    var res TemplateContext
+    fmt.Sscanf(a, "%v", &res)
+    return res
 }
 
 func GetOEmbedTw(tw int64, tw_chans chan OEmbedWithId, client *twitter.Client) {
@@ -132,6 +160,17 @@ func main() {
     httpClient := config.Client(oauth2.NoContext, token)
     client := twitter.NewClient(httpClient)
 
+	redClient := redis.NewClient(&redis.Options{
+		Addr:     os.Getenv("REDIS_SERVER") + ":" + os.Getenv("REDIS_PORT"),
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+
+	pong, err := redClient.Ping().Result()
+
+    log.Printf("Redis client connected. Ping response: %v", pong)
+    redClientExists := err == nil
+
     http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./public"))))
 
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -161,10 +200,22 @@ func main() {
         }
 
         if (r.Method == "GET" && strings.HasPrefix(r.URL.Path, "/get/")) {
-            log.Printf("POST req recd")
+            log.Println("GET ", r.URL.Path)
             w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
             handle := strings.Replace(r.URL.Path, "/get/", "", 1)
+
+            // TODO: Check if this username's data is already there in redis
+            if (redClientExists) {
+                log.Printf("Check if data is in Redis, if it is there then don't do any of the stuff below!")
+                val, err := redClient.Get(handle).Result()
+                log.Println("Value: ", val)
+                log.Println("Error: ", err)
+                if len(val) > 0 {
+                    res := UnstringifyContext(val)
+                    log.Printf("Retrieved from redis for %s: %v", handle, res)
+                }
+            }
 
             incRT := false
 
@@ -318,21 +369,7 @@ func main() {
             if err != nil {
                 log.Fatal(err)
             } else {
-                data_obj := struct {
-                    Num_Tweets int
-                    Word_Count int
-                    Handle string
-                    Most_Fav template.HTML
-                    Most_RT template.HTML
-                    First_Tweet template.HTML
-                    Last_Tweet template.HTML
-                    Most_Fav_Count int
-                    Most_RT_Count int
-                    MonthNames []string
-                    MonthValues []int
-                    WeekdayNames []string
-                    WeekdayValues []int
-                }{
+                data_obj := TemplateContext{
                     num_tweets,
                     word_count,
                     handle,
@@ -352,6 +389,14 @@ func main() {
                 new_temp.Execute(&templated_res, data_obj)
 
                 fmt.Fprint(w, templated_res.String())
+                if (redClientExists) {
+                    err := redClient.Set(handle, StringifyContext(data_obj), 0).Err()
+                    if err != nil {
+                        log.Printf("Couldn't write %s's data to Redis: %v", handle, err)
+                    } else {
+                        log.Printf("Wrote %s's data to Redis", handle)
+                    }
+                }
                 return;
             }
         }
