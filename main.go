@@ -47,6 +47,7 @@ type TemplateContext struct {
     MonthValues    []int
     WeekdayNames   []string
     WeekdayValues  []int
+    LastUpdated    string
 }
 
 func StringifyContext(a TemplateContext) string {
@@ -392,6 +393,7 @@ func main() {
                 monthValues,
                 weekdays,
                 weekdayValues,
+                time.Now().UTC().Format(time.RFC822),
             }
 
             fmt.Fprint(w, getHTMLFromData(data_obj))
