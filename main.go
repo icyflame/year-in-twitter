@@ -229,6 +229,7 @@ func main() {
         if r.Method == "POST" && r.URL.Path == "/" {
             r.ParseForm()
             handle := r.PostForm.Get("handle")
+            handle = strings.ToLower(handle)
             http.Redirect(w, r, "/get/"+handle, 302)
             return
         }
@@ -238,6 +239,7 @@ func main() {
             w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
             handle := strings.Replace(r.URL.Path, "/get/", "", 1)
+            handle = strings.ToLower(handle)
 
             if redClientExists {
                 val, err := redClient.HGet(RED_KEY, handle).Result()
