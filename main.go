@@ -168,11 +168,7 @@ func main() {
     httpClient := config.Client(oauth2.NoContext, token)
     client := twitter.NewClient(httpClient)
 
-    redClient := redis.NewClient(&redis.Options{
-        Addr:     os.Getenv("REDIS_SERVER") + ":" + os.Getenv("REDIS_PORT"),
-        Password: "", // no password set
-        DB:       0,  // use default DB
-    })
+    redClient := redis.NewClient(redis.ParseURL(os.Getenv("REDIS_URL")))
 
     pong, err := redClient.Ping().Result()
 
