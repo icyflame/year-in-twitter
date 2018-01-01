@@ -1,3 +1,4 @@
 .env
 server
 year-in-twitter
+*.rdb
