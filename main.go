@@ -253,6 +253,8 @@ func main() {
                     userTimelineParams.MaxID = last_tw_id - 1
                 }
 
+                log.Println("User timeline parameters: ", userTimelineParams)
+
                 tweets, _, err := client.Timelines.UserTimeline(userTimelineParams)
 
                 if err != nil {
