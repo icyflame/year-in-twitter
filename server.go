@@ -46,6 +46,7 @@ func GetOEmbedTw(tw int64, tw_chans chan OEmbedWithId, client *twitter.Client) {
 * 2. Most liked tweet
 * 3. Most retweeted tweet
 * 4. Total number of tweets
+* 5. Pie chart for tweets by month and tweets by weekday
 *
 * Store in JSON and then regenerate only on request.
 */
@@ -173,7 +174,8 @@ func main() {
             last_tw_time := time.Now()
             var last_tw_id int64
             last_tw_id = 0
-            var first_tw_in_period twitter.Tweet;
+            var first_tw_in_period, last_tw_in_period twitter.Tweet;
+            lastTweetFound := false
 
             monthMap := map[string]int{}
             weekdayMap := map[string]int{}
@@ -234,6 +236,11 @@ func main() {
                             continue;
                         }
 
+                        if (!lastTweetFound) {
+                            last_tw_in_period = tweet
+                            lastTweetFound = true
+                        }
+
                         if (!whole_set) {
                             num_tweets++
                             first_tw_in_period = tweet
@@ -265,7 +272,7 @@ func main() {
             log.Printf("Weekday map: %+v", weekdayMap)
             log.Printf("Hour map: %+v", hourMap)
 
-            id_list := []int64{ first_tw_in_period.ID, maxFav.ID, maxRT.ID }
+            id_list := []int64{ first_tw_in_period.ID, maxFav.ID, maxRT.ID, last_tw_in_period.ID }
 
             tweet_chans := make(chan OEmbedWithId)
 
@@ -276,8 +283,9 @@ func main() {
             tweet1 := <-tweet_chans
             tweet2 := <-tweet_chans
             tweet3 := <-tweet_chans
+            tweet4 := <-tweet_chans
 
-            tw_coll := []OEmbedWithId{tweet1, tweet2, tweet3}
+            tw_coll := []OEmbedWithId{tweet1, tweet2, tweet3, tweet4}
             reqd_tweets := map[int64]*twitter.OEmbedTweet{}
 
             for _, t := range tw_coll {
@@ -287,6 +295,7 @@ func main() {
             ftw := reqd_tweets[first_tw_in_period.ID]
             mft := reqd_tweets[maxFav.ID]
             mrt := reqd_tweets[maxRT.ID]
+            ltw := reqd_tweets[last_tw_in_period.ID]
 
             new_temp, err := template.ParseFiles(TEMPLATE_FILE)
 
@@ -311,6 +320,7 @@ func main() {
                     Most_Fav template.HTML
                     Most_RT template.HTML
                     First_Tweet template.HTML
+                    Last_Tweet template.HTML
                     Most_Fav_Count int
                     Most_RT_Count int
                     MonthNames []string
@@ -324,6 +334,7 @@ func main() {
                     template.HTML(mft.HTML),
                     template.HTML(mrt.HTML),
                     template.HTML(ftw.HTML),
+                    template.HTML(ltw.HTML),
                     maxFav.FavoriteCount,
                     maxRT.RetweetCount,
                     months,
