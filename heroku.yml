@@ -5,4 +5,4 @@ build:
     - go
 
 run:
-  web: twitter-2017-in-review
+  web: year-in-twitter
