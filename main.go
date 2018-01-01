@@ -59,7 +59,7 @@ func UnstringifyContext(a string) TemplateContext {
     var res TemplateContext
     err := json.Unmarshal(val, &res)
     if err != nil {
-        log.Panic(err)
+        log.Print(err)
     }
     return res
 }
@@ -124,7 +124,7 @@ func main() {
 
     err := godotenv.Load()
     if err != nil {
-        log.Panic("Error loading .env file")
+        log.Print("Error loading .env file")
     }
 
     var tok BearerToken
@@ -146,16 +146,16 @@ func main() {
         resp, err := access_tok_client.Do(req)
 
         if err != nil {
-            log.Panic(err)
+            log.Print(err)
         } else {
             bearer, err := ioutil.ReadAll(resp.Body)
             if err != nil {
-                log.Panic(err)
+                log.Print(err)
             } else {
                 err := json.Unmarshal(bearer, &tok)
 
                 if err != nil {
-                    log.Panic(err)
+                    log.Print(err)
                 } else {
                     log.Printf("Access token received")
                 }
@@ -193,7 +193,7 @@ func main() {
             b, err := ioutil.ReadFile("index.html")
 
             if err != nil {
-                log.Panic(err)
+                log.Print(err)
                 fmt.Fprintf(w, "There has been an error! Error: %v", err)
             } else {
                 fmt.Fprintf(w, "%s", b)
