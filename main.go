@@ -191,7 +191,7 @@ func main() {
 
             if err != nil {
                 log.Print(err)
-                fmt.Fprintf(w, "There has been an error! Error: %v", err)
+                fmt.Fprintf(w, "Can't read index file from disk. Error: %v", err)
             } else {
                 fmt.Fprintf(w, "%s", b)
             }
@@ -256,7 +256,7 @@ func main() {
                 tweets, _, err := client.Timelines.UserTimeline(userTimelineParams)
 
                 if err != nil {
-                    fmt.Fprintf(w, "Error: %v", err)
+                    fmt.Fprintf(w, "Can't get Timeline for this user. Error: %v", err)
                     return
                 } else if len(tweets) > 0 {
 
