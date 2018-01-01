@@ -183,6 +183,8 @@ func main() {
 
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 
+        start_time := time.Now()
+
         if (r.Method == "GET" && r.URL.Path == "/") {
             log.Printf("GET req recd");
 
@@ -193,11 +195,13 @@ func main() {
             if err != nil {
                 log.Panic(err)
                 fmt.Fprintf(w, "There has been an error! Error: %v", err)
-                return;
             } else {
                 fmt.Fprintf(w, "%s", b)
-                return;
             }
+
+            end_time := time.Now()
+            log.Printf("REQ_TIME INDEX GET / - %v", end_time.Sub(start_time))
+            return
         }
 
         if (r.Method == "POST" && r.URL.Path == "/") {
@@ -219,6 +223,8 @@ func main() {
                     res := UnstringifyContext(val)
                     log.Printf("Retrieved from redis for %s; Serving HTML now", handle)
                     fmt.Fprintf(w, getHTMLFromData(res))
+                    end_time := time.Now()
+                    log.Printf("REQ_TIME REDIS GET /get/%s - %v", handle, end_time.Sub(start_time))
                     return
                 }
             }
@@ -385,6 +391,9 @@ func main() {
                     log.Printf("Wrote %s's data to Redis", handle)
                 }
             }
+
+            end_time := time.Now()
+            log.Printf("REQ_TIME API GET /get/%s - %v", handle, end_time.Sub(start_time))
             return;
         }
 
