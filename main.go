@@ -118,6 +118,8 @@ func main() {
         "Sunday",
     }
 
+    RED_KEY := "yearReviewTwitter"
+
     // Ref time: Mon Jan 2 15:04:05 MST 2006
     begin, _ := time.Parse("2006-01-02", "2017-01-01")
     end, _ := time.Parse("2006-01-02", "2018-01-01")
@@ -216,7 +218,7 @@ func main() {
             handle := strings.Replace(r.URL.Path, "/get/", "", 1)
 
             if redClientExists {
-                val, err := redClient.Get(handle).Result()
+                val, err := redClient.HGet(RED_KEY, handle).Result()
                 if err == nil && len(val) > 0 {
                     res := UnstringifyContext(val)
                     log.Printf("Retrieved from redis for %s; Serving HTML now", handle)
@@ -399,7 +401,7 @@ func main() {
             fmt.Fprint(w, getHTMLFromData(data_obj))
 
             if redClientExists {
-                err := redClient.Set(handle, StringifyContext(data_obj), 0).Err()
+                err := redClient.HSet(RED_KEY, handle, StringifyContext(data_obj)).Err()
                 if err != nil {
                     log.Printf("Couldn't write %s's data to Redis: %v", handle, err)
                 } else {
