@@ -22,6 +22,7 @@ import "html/template"
 import "bytes"
 
 import "time"
+import "sort"
 
 type BearerToken struct {
     Token_Type   string
@@ -218,6 +219,7 @@ func main() {
                 if err != nil {
                     fmt.Fprintf(w, "Couldn't get the list of cached handles from Redis. Error: %v", err)
                 } else {
+                    sort.Strings(val)
                     fmt.Fprint(w, getCachedHTMLFromData(val))
                 }
             } else {
