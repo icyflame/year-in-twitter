@@ -65,14 +65,13 @@ func UnstringifyContext (a string) TemplateContext {
 }
 
 func getHTMLFromData(res TemplateContext) string {
-    new_temp, _ := template.ParseFiles(TEMPLATE_FILE)
+    new_temp, _ := template.ParseFiles("template.html")
     var templated_res bytes.Buffer
     new_temp.Execute(&templated_res, res)
     return templated_res.String()
 }
 
 func GetOEmbedTw(tw int64, tw_chans chan OEmbedWithId, client *twitter.Client) {
-    log.Printf("%d", tw)
     statusOembedParams := &twitter.StatusOEmbedParams{ID: tw, MaxWidth: 500}
     oembed, _, _ := client.Statuses.OEmbed(statusOembedParams)
     var oembed_id OEmbedWithId
@@ -118,9 +117,6 @@ func main() {
                             "Sunday",
                         }
 
-    log.Printf("Months: %s", strings.Join(months, ","))
-
-    TEMPLATE_FILE := "template.html"
     // Ref time: Mon Jan 2 15:04:05 MST 2006
     begin, _ := time.Parse("2006-01-02", "2017-01-01")
     end, _ := time.Parse("2006-01-02", "2018-01-01")
@@ -150,16 +146,16 @@ func main() {
         resp, err := access_tok_client.Do(req)
 
         if err != nil {
-            log.Fatal(err)
+            log.Panic(err)
         } else {
             bearer, err := ioutil.ReadAll(resp.Body)
             if err != nil {
-                log.Fatal(err)
+                log.Panic(err)
             } else {
                 err := json.Unmarshal(bearer, &tok)
 
                 if err != nil {
-                    log.Fatal(err)
+                    log.Panic(err)
                 } else {
                     log.Printf("Access token received")
                 }
@@ -195,7 +191,7 @@ func main() {
             b, err := ioutil.ReadFile("index.html")
 
             if err != nil {
-                log.Fatal(err)
+                log.Panic(err)
                 fmt.Fprintf(w, "There has been an error! Error: %v", err)
                 return;
             } else {
@@ -218,13 +214,10 @@ func main() {
             handle := strings.Replace(r.URL.Path, "/get/", "", 1)
 
             if (redClientExists) {
-                log.Printf("Check if data is in Redis, if it is there then don't do any of the stuff below!")
                 val, err := redClient.Get(handle).Result()
-                log.Println("Value: ", val)
-                log.Println("Error: ", err)
-                if len(val) > 0 {
+                if err == nil && len(val) > 0 {
                     res := UnstringifyContext(val)
-                    log.Printf("Retrieved from redis for %s: %v", handle, res)
+                    log.Printf("Retrieved from redis for %s; Serving HTML now", handle)
                     fmt.Fprintf(w, getHTMLFromData(res))
                     return
                 }
@@ -248,8 +241,6 @@ func main() {
             monthMap := map[string]int{}
             weekdayMap := map[string]int{}
             hourMap := map[int]int{}
-
-            log.Printf("Searching for all tweets before %s", begin)
 
             for last_tw_time.After(begin) {
 
@@ -331,15 +322,6 @@ func main() {
                     }
                 }
             }
-
-            log.Printf("Word count: %d", word_count)
-            log.Printf("Number of tweets: %d", num_tweets)
-            log.Printf("First tweet in this period: %d", first_tw_in_period.ID)
-            log.Printf("Tweet with maximum favourites: %d", maxFav.ID)
-            log.Printf("Tweet with maximum Retweets: %d", maxRT.ID)
-            log.Printf("Month map: %+v", monthMap)
-            log.Printf("Weekday map: %+v", weekdayMap)
-            log.Printf("Hour map: %+v", hourMap)
 
             id_list := []int64{ first_tw_in_period.ID, maxFav.ID, maxRT.ID, last_tw_in_period.ID }
 
