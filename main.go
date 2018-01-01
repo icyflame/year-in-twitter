@@ -227,6 +227,8 @@ func main() {
             }
 
             incRT := false
+            excRP := false
+            trimUser := true
 
             num_tweets := 0
             word_count := 0
@@ -247,9 +249,13 @@ func main() {
 
             empty_resp := 0
 
-            for last_tw_time.After(begin) && empty_resp < 5 {
+            for last_tw_time.After(begin) && empty_resp < 10 {
 
-                userTimelineParams := &twitter.UserTimelineParams{ScreenName: handle, Count: 200, IncludeRetweets: &incRT}
+                userTimelineParams := &twitter.UserTimelineParams{ScreenName: handle,
+                                                                    Count: 200,
+                                                                    TrimUser: &trimUser,
+                                                                    IncludeRetweets: &incRT,
+                                                                    ExcludeReplies: &excRP}
 
                 if last_tw_id > 0 {
                     userTimelineParams.MaxID = last_tw_id - 1
