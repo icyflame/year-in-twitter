@@ -24,37 +24,37 @@ import "bytes"
 import "time"
 
 type BearerToken struct {
-    Token_Type string
+    Token_Type   string
     Access_Token string
 }
 
 type OEmbedWithId struct {
-    ID int64
+    ID    int64
     Tweet *twitter.OEmbedTweet
 }
 
 type TemplateContext struct {
-    Num_Tweets int
-    Word_Count int
-    Handle string
-    Most_Fav template.HTML
-    Most_RT template.HTML
-    First_Tweet template.HTML
-    Last_Tweet template.HTML
+    Num_Tweets     int
+    Word_Count     int
+    Handle         string
+    Most_Fav       template.HTML
+    Most_RT        template.HTML
+    First_Tweet    template.HTML
+    Last_Tweet     template.HTML
     Most_Fav_Count int
-    Most_RT_Count int
-    MonthNames []string
-    MonthValues []int
-    WeekdayNames []string
-    WeekdayValues []int
+    Most_RT_Count  int
+    MonthNames     []string
+    MonthValues    []int
+    WeekdayNames   []string
+    WeekdayValues  []int
 }
 
-func StringifyContext (a TemplateContext) string {
+func StringifyContext(a TemplateContext) string {
     byteStr, _ := json.Marshal(a)
-    return b64.StdEncoding.EncodeToString(byteStr);
+    return b64.StdEncoding.EncodeToString(byteStr)
 }
 
-func UnstringifyContext (a string) TemplateContext {
+func UnstringifyContext(a string) TemplateContext {
     val, _ := b64.StdEncoding.DecodeString(a)
     var res TemplateContext
     err := json.Unmarshal(val, &res)
@@ -93,29 +93,29 @@ func GetOEmbedTw(tw int64, tw_chans chan OEmbedWithId, client *twitter.Client) {
 func main() {
 
     months := []string{
-                        "January",
-                        "February",
-                        "March",
-                        "April",
-                        "May",
-                        "June",
-                        "July",
-                        "August",
-                        "September",
-                        "October",
-                        "November",
-                        "December",
-                    }
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+    }
 
     weekdays := []string{
-                            "Monday",
-                            "Tuesday",
-                            "Wednesday",
-                            "Thursday",
-                            "Friday",
-                            "Saturday",
-                            "Sunday",
-                        }
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+    }
 
     // Ref time: Mon Jan 2 15:04:05 MST 2006
     begin, _ := time.Parse("2006-01-02", "2017-01-01")
@@ -138,7 +138,7 @@ func main() {
         data := os.Getenv("CONSUMER_KEY") + ":" + os.Getenv("CONSUMER_SECRET")
         b64_token := b64.StdEncoding.EncodeToString([]byte(data))
 
-        req.Header.Add("Authorization", "Basic " + b64_token)
+        req.Header.Add("Authorization", "Basic "+b64_token)
         req.Header.Add("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
 
         access_tok_client := &http.Client{}
@@ -168,13 +168,13 @@ func main() {
     httpClient := config.Client(oauth2.NoContext, token)
     client := twitter.NewClient(httpClient)
 
-	redClient := redis.NewClient(&redis.Options{
-		Addr:     os.Getenv("REDIS_SERVER") + ":" + os.Getenv("REDIS_PORT"),
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
+    redClient := redis.NewClient(&redis.Options{
+        Addr:     os.Getenv("REDIS_SERVER") + ":" + os.Getenv("REDIS_PORT"),
+        Password: "", // no password set
+        DB:       0,  // use default DB
+    })
 
-	pong, err := redClient.Ping().Result()
+    pong, err := redClient.Ping().Result()
 
     log.Printf("Redis client connected. Ping response: %v", pong)
     redClientExists := err == nil
@@ -185,8 +185,8 @@ func main() {
 
         start_time := time.Now()
 
-        if (r.Method == "GET" && r.URL.Path == "/") {
-            log.Printf("GET req recd");
+        if r.Method == "GET" && r.URL.Path == "/" {
+            log.Printf("GET req recd")
 
             w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
@@ -204,20 +204,20 @@ func main() {
             return
         }
 
-        if (r.Method == "POST" && r.URL.Path == "/") {
+        if r.Method == "POST" && r.URL.Path == "/" {
             r.ParseForm()
             handle := r.PostForm.Get("handle")
-            http.Redirect(w, r, "/get/" + handle, 302)
-            return;
+            http.Redirect(w, r, "/get/"+handle, 302)
+            return
         }
 
-        if (r.Method == "GET" && strings.HasPrefix(r.URL.Path, "/get/")) {
+        if r.Method == "GET" && strings.HasPrefix(r.URL.Path, "/get/") {
             log.Println("GET ", r.URL.Path)
             w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
             handle := strings.Replace(r.URL.Path, "/get/", "", 1)
 
-            if (redClientExists) {
+            if redClientExists {
                 val, err := redClient.Get(handle).Result()
                 if err == nil && len(val) > 0 {
                     res := UnstringifyContext(val)
@@ -234,14 +234,14 @@ func main() {
             num_tweets := 0
             word_count := 0
 
-            var maxRT twitter.Tweet;
-            var maxFav twitter.Tweet;
+            var maxRT twitter.Tweet
+            var maxFav twitter.Tweet
             firstRun := true
 
             last_tw_time := time.Now()
             var last_tw_id int64
             last_tw_id = 0
-            var first_tw_in_period, last_tw_in_period twitter.Tweet;
+            var first_tw_in_period, last_tw_in_period twitter.Tweet
             lastTweetFound := false
 
             monthMap := map[string]int{}
@@ -250,17 +250,17 @@ func main() {
 
             for last_tw_time.After(begin) {
 
-                userTimelineParams := &twitter.UserTimelineParams{ScreenName: handle,Count: 200,IncludeRetweets: &incRT}
+                userTimelineParams := &twitter.UserTimelineParams{ScreenName: handle, Count: 200, IncludeRetweets: &incRT}
 
-                if (last_tw_id > 0) {
-                    userTimelineParams.MaxID = last_tw_id - 1;
+                if last_tw_id > 0 {
+                    userTimelineParams.MaxID = last_tw_id - 1
                 }
 
                 tweets, _, err := client.Timelines.UserTimeline(userTimelineParams)
 
                 if err != nil {
                     fmt.Fprintf(w, "Error: %v", err)
-                    return;
+                    return
                 } else if len(tweets) > 0 {
 
                     first_tw := tweets[0]
@@ -275,9 +275,9 @@ func main() {
 
                     whole_set := last_tw_time.After(begin) && first_tw_time.Before(end)
 
-                    if (whole_set) {
+                    if whole_set {
                         num_tweets += len(tweets)
-                        first_tw_in_period = last_tw;
+                        first_tw_in_period = last_tw
                     }
 
                     if firstRun {
@@ -292,33 +292,33 @@ func main() {
                             // If this tweet is before the beginning of this
                             // period, then every tweet after WILL definitely be
                             // before this period and not of any interest to us.
-                            break;
+                            break
                         }
 
-                        if (!whole_set && this_tw_time.After(end)) {
+                        if !whole_set && this_tw_time.After(end) {
                             // If this tweet is after the end of the period,
                             // then we should skip this tweet and keep checking
                             // older tweets
-                            continue;
+                            continue
                         }
 
-                        if (!lastTweetFound) {
+                        if !lastTweetFound {
                             last_tw_in_period = tweet
                             lastTweetFound = true
                         }
 
-                        if (!whole_set) {
+                        if !whole_set {
                             num_tweets++
                             first_tw_in_period = tweet
                         }
 
                         word_count += len(strings.Fields(tweet.Text))
 
-                        if (tweet.RetweetCount > maxRT.RetweetCount) {
+                        if tweet.RetweetCount > maxRT.RetweetCount {
                             maxRT = tweet
                         }
 
-                        if (tweet.FavoriteCount > maxFav.FavoriteCount) {
+                        if tweet.FavoriteCount > maxFav.FavoriteCount {
                             maxFav = tweet
                         }
 
@@ -329,7 +329,7 @@ func main() {
                 }
             }
 
-            id_list := []int64{ first_tw_in_period.ID, maxFav.ID, maxRT.ID, last_tw_in_period.ID }
+            id_list := []int64{first_tw_in_period.ID, maxFav.ID, maxRT.ID, last_tw_in_period.ID}
 
             tweet_chans := make(chan OEmbedWithId)
 
@@ -383,7 +383,7 @@ func main() {
 
             fmt.Fprint(w, getHTMLFromData(data_obj))
 
-            if (redClientExists) {
+            if redClientExists {
                 err := redClient.Set(handle, StringifyContext(data_obj), 0).Err()
                 if err != nil {
                     log.Printf("Couldn't write %s's data to Redis: %v", handle, err)
@@ -394,14 +394,14 @@ func main() {
 
             end_time := time.Now()
             log.Printf("REQ_TIME API GET /get/%s - %v", handle, end_time.Sub(start_time))
-            return;
+            return
         }
 
-        fmt.Fprintf(w, r.URL.Path + " is not supported! Only GET / and POST / is supported right now.");
-        return;
+        fmt.Fprintf(w, r.URL.Path+" is not supported! Only GET / and POST / is supported right now.")
+        return
     })
 
     log.Printf("Server started")
     log.Printf("Listening on port %s", os.Getenv("PORT"))
-    log.Fatal(http.ListenAndServe(":" + os.Getenv("PORT"), nil))
+    log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), nil))
 }
