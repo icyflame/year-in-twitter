@@ -70,83 +70,15 @@
 
         </div>
 
-            <!-- Optional JavaScript -->
-            <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-            <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-40518182-15"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
 
-            <script src="https://d3js.org/d3.v4.min.js"></script>
-            <script src="/static/d3pie.min.js"></script>
-
-            <script>
-            var totalCharts = [{
-                names: {{.MonthNames}},
-                vals: {{.MonthValues}},
-                title: "Tweets by month",
-                subtitle: "How much did you tweet each month this year?",
-                target_element: "#month-chart"
-            }, {
-                names: {{.WeekdayNames}},
-                vals: {{.WeekdayValues}},
-                title: "Tweets by weekday",
-                subtitle: "How much did you tweet each day of the week?",
-                target_element: "#weekday-chart"
-            }];
-
-            for (index in totalCharts) {
-                var nv = totalCharts[index];
-                var labs = nv.names;
-                var vals = nv.vals;
-                var content = [ ];
-
-                for (i = 0; i < labs.length; i++) {
-                    content.push({ label: labs[i], value: vals[i] })
-                }
-
-                var config = {
-                    header: {
-                        title: {
-                            text: nv.title,
-                            fontSize: 30
-                        },
-                        subtitle: {
-                            text: nv.subtitle
-                        }
-                    },
-                    size: {
-                        canvasWidth: 590
-                    },
-                    labels: {
-                        outer: {
-                            format: "label-value1"
-                        },
-                        inner: {
-                            hideWhenLessThanPercentage: 15
-                        },
-                        mainLabel: {
-                            fontSize: 15
-                        },
-                        value: {
-                            color: "#333333",
-                            fontSize: 15
-                        }
-                    },
-                    data: {
-                        content: content
-                    }
-                };
-                var myPie = new d3pie(nv.target_element, config);
-            }
-            </script>
-
-			<!-- Global site tag (gtag.js) - Google Analytics -->
-			<script async src="https://www.googletagmanager.com/gtag/js?id=UA-40518182-15"></script>
-			<script>
-			  window.dataLayer = window.dataLayer || [];
-			  function gtag(){dataLayer.push(arguments);}
-			  gtag('js', new Date());
-
-			  gtag('config', 'UA-40518182-15');
-			</script>
+          gtag('config', 'UA-40518182-15');
+        </script>
 
     </body>
 </html>
