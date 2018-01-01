@@ -136,12 +136,7 @@ func main() {
 
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 
-        if (r.URL.Path != "/") {
-            fmt.Fprintf(w, r.URL.Path + " is not supported! Only GET / and POST / is supported right now.");
-            return;
-        }
-
-        if (r.Method == "GET") {
+        if (r.Method == "GET" && r.URL.Path == "/") {
             log.Printf("GET req recd");
 
             w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -150,17 +145,26 @@ func main() {
 
             if err != nil {
                 log.Fatal(err)
+                fmt.Fprintf(w, "There has been an error! Error: %v", err)
+                return;
             } else {
-                // log.Printf("%s", b)
                 fmt.Fprintf(w, "%s", b)
+                return;
             }
-        } else if (r.Method == "POST") {
-            r.ParseForm()
+        }
 
+        if (r.Method == "POST" && r.URL.Path == "/") {
+            r.ParseForm()
+            handle := r.PostForm.Get("handle")
+            http.Redirect(w, r, "/get/" + handle, 302)
+            return;
+        }
+
+        if (r.Method == "GET" && strings.HasPrefix(r.URL.Path, "/get/")) {
             log.Printf("POST req recd")
             w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-            handle := r.PostForm.Get("handle")
+            handle := strings.Replace(r.URL.Path, "/get/", "", 1)
 
             incRT := false
 
@@ -194,7 +198,8 @@ func main() {
                 tweets, _, err := client.Timelines.UserTimeline(userTimelineParams)
 
                 if err != nil {
-                    log.Fatal(err);
+                    fmt.Fprintf(w, "Error: %v", err)
+                    return;
                 } else if len(tweets) > 0 {
 
                     first_tw := tweets[0]
@@ -347,10 +352,12 @@ func main() {
                 new_temp.Execute(&templated_res, data_obj)
 
                 fmt.Fprint(w, templated_res.String())
+                return;
             }
-        } else {
-            fmt.Fprintf(w, "Unrecognized method. Only GET / and POST / are supported!");
         }
+
+        fmt.Fprintf(w, r.URL.Path + " is not supported! Only GET / and POST / is supported right now.");
+        return;
     })
 
     log.Printf("Server started")
