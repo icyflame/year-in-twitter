@@ -72,6 +72,14 @@ func getHTMLFromData(res TemplateContext) string {
     return templated_res.String()
 }
 
+func getCachedHTMLFromData(a []string) string {
+    new_temp, _ := template.ParseFiles("cached.html")
+    var templated_res bytes.Buffer
+    new_temp.Execute(&templated_res,
+                            struct{ CachedList []string }{a})
+    return templated_res.String()
+}
+
 func GetOEmbedTw(tw int64, tw_chans chan OEmbedWithId, client *twitter.Client) {
     statusOembedParams := &twitter.StatusOEmbedParams{ID: tw, MaxWidth: 500}
     oembed, _, _ := client.Statuses.OEmbed(statusOembedParams)
@@ -201,6 +209,20 @@ func main() {
 
             end_time := time.Now()
             log.Printf("REQ_TIME INDEX GET / - %v", end_time.Sub(start_time))
+            return
+        }
+
+        if r.Method == "GET" && r.URL.Path == "/cached" {
+            if redClientExists {
+                val, err := redClient.HKeys(RED_KEY).Result()
+                if err != nil {
+                    fmt.Fprintf(w, "Couldn't get the list of cached handles from Redis. Error: %v", err)
+                } else {
+                    fmt.Fprint(w, getCachedHTMLFromData(val))
+                }
+            } else {
+                fmt.Fprint(w, "Could not connect to Redis. Try after some time!")
+            }
             return
         }
 

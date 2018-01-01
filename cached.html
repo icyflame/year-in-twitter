@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>List of handles with cached reports</title>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+    </head>
+    <body style="margin:40px;">
+
+        <div class="container">
+            <header class="header clearfix">
+                <nav>
+                    <ul class="nav nav-pills float-right">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/cached">Cached</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link"
+                                href="https://github.com/icyflame/year-in-twitter"
+                                target="_blank">Github</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="https://www.siddharthkannan.in" target="_blank">About</a>
+                        </li>
+                    </ul>
+                </nav>
+                <h3>2017 on Twitter</h3>
+            </header>
+
+            <main role="main">
+
+            <div class="jumbotron">
+                <h2 class="display-3">
+                    List of handles whose reports are cached
+                </h2>
+            </div>
+
+            <div class="row marketing">
+                <ol>
+                    {{range .CachedList}}
+                    <li>
+                        {{println .}} -
+                        <a href="https://twitter.com/{{print .}}"
+                            target="_blank">
+                            Twitter
+                        </a> -
+                        <a href="https://twitter.siddharthkannan.in/get/{{print .}}"
+                        target="_blank">
+                            Report
+                        </a>
+                    </li>
+                    {{end}}
+                </ol>
+            </div>
+
+
+            </main>
+
+            <footer class="footer">
+                <hr>
+                <p>Siddharth Kannan - Year on Twitter 2017</p>
+            </footer>
+
+        </div>
+
+            <!-- Optional JavaScript -->
+            <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+            <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+
+            <script src="https://d3js.org/d3.v4.min.js"></script>
+            <script src="/static/d3pie.min.js"></script>
+
+            <script>
+            var totalCharts = [{
+                names: {{.MonthNames}},
+                vals: {{.MonthValues}},
+                title: "Tweets by month",
+                subtitle: "How much did you tweet each month this year?",
+                target_element: "#month-chart"
+            }, {
+                names: {{.WeekdayNames}},
+                vals: {{.WeekdayValues}},
+                title: "Tweets by weekday",
+                subtitle: "How much did you tweet each day of the week?",
+                target_element: "#weekday-chart"
+            }];
+
+            for (index in totalCharts) {
+                var nv = totalCharts[index];
+                var labs = nv.names;
+                var vals = nv.vals;
+                var content = [ ];
+
+                for (i = 0; i < labs.length; i++) {
+                    content.push({ label: labs[i], value: vals[i] })
+                }
+
+                var config = {
+                    header: {
+                        title: {
+                            text: nv.title,
+                            fontSize: 30
+                        },
+                        subtitle: {
+                            text: nv.subtitle
+                        }
+                    },
+                    size: {
+                        canvasWidth: 590
+                    },
+                    labels: {
+                        outer: {
+                            format: "label-value1"
+                        },
+                        inner: {
+                            hideWhenLessThanPercentage: 15
+                        },
+                        mainLabel: {
+                            fontSize: 15
+                        },
+                        value: {
+                            color: "#333333",
+                            fontSize: 15
+                        }
+                    },
+                    data: {
+                        content: content
+                    }
+                };
+                var myPie = new d3pie(nv.target_element, config);
+            }
+            </script>
+
+			<!-- Global site tag (gtag.js) - Google Analytics -->
+			<script async src="https://www.googletagmanager.com/gtag/js?id=UA-40518182-15"></script>
+			<script>
+			  window.dataLayer = window.dataLayer || [];
+			  function gtag(){dataLayer.push(arguments);}
+			  gtag('js', new Date());
+
+			  gtag('config', 'UA-40518182-15');
+			</script>
+
+    </body>
+</html>
