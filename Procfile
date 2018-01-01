@@ -1,1 +1,1 @@
-web: go build && ./year-in-twiter
+web: year-in-twitter
