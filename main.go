@@ -219,7 +219,7 @@ func main() {
                 if err == nil && len(val) > 0 {
                     res := UnstringifyContext(val)
                     log.Printf("Retrieved from redis for %s; Serving HTML now", handle)
-                    fmt.Fprintf(w, getHTMLFromData(res))
+                    fmt.Fprint(w, getHTMLFromData(res))
                     end_time := time.Now()
                     log.Printf("REQ_TIME REDIS GET /get/%s - %v", handle, end_time.Sub(start_time))
                     return
@@ -410,7 +410,7 @@ func main() {
             return
         }
 
-        fmt.Fprintf(w, r.URL.Path+" is not supported! Only GET / and POST / is supported right now.")
+        fmt.Fprint(w, r.URL.Path + " is not supported! Only GET / and POST / is supported right now.")
         return
     })
 
