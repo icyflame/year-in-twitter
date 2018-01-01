@@ -245,7 +245,9 @@ func main() {
             weekdayMap := map[string]int{}
             hourMap := map[int]int{}
 
-            for last_tw_time.After(begin) {
+            empty_resp := 0
+
+            for last_tw_time.After(begin) && empty_resp < 5 {
 
                 userTimelineParams := &twitter.UserTimelineParams{ScreenName: handle, Count: 200, IncludeRetweets: &incRT}
 
@@ -261,6 +263,7 @@ func main() {
                     fmt.Fprintf(w, "Can't get Timeline for this user. Error: %v", err)
                     return
                 } else if len(tweets) > 0 {
+                    empty_resp = 0
 
                     first_tw := tweets[0]
                     first_tw_time, _ := time.Parse(time.RubyDate, first_tw.CreatedAt)
@@ -325,6 +328,11 @@ func main() {
                         weekdayMap[this_tw_time.Weekday().String()] += 1
                         hourMap[this_tw_time.Hour()] += 1
                     }
+                } else {
+                    // we asked for 200 tweets out of which every single one was
+                    // a retweet!
+                    last_tw_id -= 190
+                    empty_resp += 1
                 }
             }
 
