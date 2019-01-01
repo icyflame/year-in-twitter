@@ -1,6 +1,6 @@
 # Year in Twitter
 
-> Find out what you did on Twitter in 2017
+> Find out what you did on Twitter in the past year
 
 ## Run
 
