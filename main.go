@@ -24,6 +24,24 @@ import "bytes"
 import "time"
 import "sort"
 
+type tweetSet []twitter.Tweet
+
+func (s tweetSet) Len() int {
+	return len(s)
+}
+
+func (s tweetSet) Less(i, j int) bool {
+	first_tw_time, _ := time.Parse(time.RubyDate, s[i].CreatedAt)
+	second_tw_time, _ := time.Parse(time.RubyDate, s[j].CreatedAt)
+	return first_tw_time.Before(second_tw_time)
+}
+
+func (s tweetSet) Swap(i, j int) {
+	temp := s[i]
+	s[i] = s[j]
+	s[j] = temp
+}
+
 type BearerToken struct {
 	Token_Type   string
 	Access_Token string
@@ -280,11 +298,13 @@ func main() {
 
 			for last_tw_time.After(begin) && empty_resp < 10 {
 
-				userTimelineParams := &twitter.UserTimelineParams{ScreenName: handle,
+				userTimelineParams := &twitter.UserTimelineParams{
+					ScreenName:      handle,
 					Count:           200,
 					TrimUser:        &trimUser,
 					IncludeRetweets: &incRT,
-					ExcludeReplies:  &excRP}
+					ExcludeReplies:  &excRP,
+				}
 
 				if last_tw_id > 0 {
 					userTimelineParams.MaxID = last_tw_id - 1
@@ -292,7 +312,11 @@ func main() {
 
 				log.Println("User timeline parameters: ", userTimelineParams)
 
-				tweets, _, err := client.Timelines.UserTimeline(userTimelineParams)
+				tweetsOrig, _, err := client.Timelines.UserTimeline(userTimelineParams)
+
+				tweets := tweetSet(tweetsOrig)
+
+				log.Println("Received number of tweets: ", len(tweets))
 
 				if err != nil {
 					fmt.Fprintf(w, "Can't get Timeline for this user. Error: %v", err)
