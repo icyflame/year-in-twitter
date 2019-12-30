@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/go-redis/redis"
+	"github.com/icyflame/year-in-twitter/tweet"
 	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
 
@@ -19,24 +20,6 @@ import (
 	"strings"
 	"time"
 )
-
-type tweetSet []twitter.Tweet
-
-func (s tweetSet) Len() int {
-	return len(s)
-}
-
-func (s tweetSet) Less(i, j int) bool {
-	first_tw_time, _ := time.Parse(time.RubyDate, s[i].CreatedAt)
-	second_tw_time, _ := time.Parse(time.RubyDate, s[j].CreatedAt)
-	return first_tw_time.Before(second_tw_time)
-}
-
-func (s tweetSet) Swap(i, j int) {
-	temp := s[i]
-	s[i] = s[j]
-	s[j] = temp
-}
 
 type BearerToken struct {
 	Token_Type   string
@@ -259,7 +242,7 @@ func main() {
 
 				tweetsOrig, _, err := client.Timelines.UserTimeline(userTimelineParams)
 
-				tweets := tweetSet(tweetsOrig)
+				tweets := tweet.Set(tweetsOrig)
 
 				log.Println("Received number of tweets: ", len(tweets))
 
