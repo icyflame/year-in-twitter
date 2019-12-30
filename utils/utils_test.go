@@ -36,3 +36,42 @@ func TestHumanNumber(t *testing.T) {
 		})
 	}
 }
+
+func TestPercentDiff(t *testing.T) {
+	type testCase struct {
+		input       int
+		inputBound  int
+		inputWindow int
+		wantOutput  bool
+	}
+
+	testCases := map[string]testCase{
+		"Base case": {
+			input:       100,
+			inputBound:  200,
+			inputWindow: 10,
+			wantOutput:  false,
+		},
+		"Base case - true": {
+			input:       100,
+			inputBound:  110,
+			inputWindow: 10,
+			wantOutput:  true,
+		},
+		"Sample case - true": {
+			input:       2466,
+			inputBound:  3200,
+			inputWindow: 50,
+			wantOutput:  true,
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			got := PercentDiff(tc.input, tc.inputBound, tc.inputWindow)
+			if diff := pretty.Compare(got, tc.wantOutput); diff != "" {
+				t.Errorf("Unexpected result: (-got +want):\n%s", diff)
+			}
+		})
+	}
+}
