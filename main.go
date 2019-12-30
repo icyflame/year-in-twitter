@@ -1,28 +1,24 @@
 package main
 
-import "github.com/joho/godotenv"
+import (
+	"github.com/dghubble/go-twitter/twitter"
+	"github.com/go-redis/redis"
+	"github.com/joho/godotenv"
+	"golang.org/x/oauth2"
 
-import "github.com/dghubble/go-twitter/twitter"
-import "golang.org/x/oauth2"
-
-import "github.com/go-redis/redis"
-
-import b64 "encoding/base64"
-import "encoding/json"
-
-import "net/http"
-import "os"
-import "fmt"
-import "log"
-import "io/ioutil"
-import "strings"
-
-import "html/template"
-
-import "bytes"
-
-import "time"
-import "sort"
+	"bytes"
+	b64 "encoding/base64"
+	"encoding/json"
+	"fmt"
+	"html/template"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"os"
+	"sort"
+	"strings"
+	"time"
+)
 
 type tweetSet []twitter.Tweet
 
@@ -148,8 +144,8 @@ func main() {
 	RED_KEY := "yearReviewTwitter"
 
 	// Ref time: Mon Jan 2 15:04:05 MST 2006
-	begin, _ := time.Parse("2006-01-02", "2018-01-01")
-	end, _ := time.Parse("2006-01-02", "2019-01-01")
+	begin, _ := time.Parse("2006-01-02", "2019-01-01")
+	end, _ := time.Parse("2006-01-02", "2020-01-01")
 	// begin, _ := time.Parse("2006-01-02", "2017-12-01")
 
 	err := godotenv.Load()
