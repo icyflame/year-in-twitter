@@ -22,8 +22,8 @@ import (
 )
 
 type BearerToken struct {
-	TokenType   string
-	AccessToken string
+	TokenType   string `json:"token_type"`
+	AccessToken string `json:"access_token"`
 }
 
 type OEmbedWithId struct {
