@@ -2,3 +2,4 @@
 server
 year-in-twitter
 *.rdb
+vendor
