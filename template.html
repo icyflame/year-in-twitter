@@ -8,7 +8,7 @@
 
         <meta property="og:type" content="website"/>
         <meta property="og:title" content="{{.Handle}}'s 2019 on Twitter"/>
-        <meta property="og:description" content="@{{.Handle}} wrote {{.Word_Count}} words in {{.Num_Tweets}} tweets in 2019!"/>
+        <meta property="og:description" content="@{{.Handle}} wrote {{.WordCount}} words in {{.NumTweets}} tweets in 2019!"/>
         <meta property="og:image" content="https://twitter.siddharthkannan.in/static/twitter_logo.png">
 
         <link href="https://abs.twimg.com/favicons/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
@@ -47,8 +47,8 @@
                     @{{.Handle}}'s 2019 on Twitter
                 </h2>
                 <h3 class="lead">
-                    @{{.Handle}} wrote {{.Word_Count}}
-                    words in {{.Num_Tweets}} tweets this year
+                    @{{.Handle}} wrote {{.WordCount}}
+                    words in {{.NumTweets}} tweets this year
                 </h3>
                 <p>
                     <i>
@@ -62,25 +62,25 @@
 
             <div class="row marketing">
                 <div class="col-lg-6">
-                    <h4>Most Favorited with {{.Most_Fav_Count}} favorites</h4>
+                    <h4>Most Favorited with {{.MostFavCount}} favorites</h4>
                     <div>
-                        {{.Most_Fav}}
+                        {{.MostFav}}
                     </div>
 
-                    <h4>Most Retweeted with {{.Most_RT_Count}} retweets</h4>
+                    <h4>Most Retweeted with {{.MostRTCount}} retweets</h4>
                     <div>
-                        {{.Most_RT}}
+                        {{.MostRT}}
                     </div>
                 </div>
 
                 <div class="col-lg-6">
                     <h4>First tweet in 2019</h4>
                     <div>
-                        {{.First_Tweet}}
+                        {{.FirstTweet}}
                     </div>
                     <h4>Last tweet in 2019</h4>
                     <div>
-                        {{.Last_Tweet}}
+                        {{.LastTweet}}
                     </div>
                 </div>
 

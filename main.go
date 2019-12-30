@@ -49,73 +49,27 @@ type OEmbedWithId struct {
 }
 
 type TemplateContext struct {
-	Num_Tweets     int
-	Word_Count     int
-	Handle         string
-	Most_Fav       template.HTML
-	Most_RT        template.HTML
-	First_Tweet    template.HTML
-	Last_Tweet     template.HTML
-	Most_Fav_Count int
-	Most_RT_Count  int
-	MonthNames     []string
-	MonthValues    []int
-	WeekdayNames   []string
-	WeekdayValues  []int
-	LastUpdated    string
+	NumTweets     int
+	WordCount     int
+	Handle        string
+	MostFav       template.HTML
+	MostRT        template.HTML
+	FirstTweet    template.HTML
+	LastTweet     template.HTML
+	MostFavCount  int
+	MostRTCount   int
+	MonthNames    []string
+	MonthValues   []int
+	WeekdayNames  []string
+	WeekdayValues []int
+	LastUpdated   string
 }
 
-func StringifyContext(a TemplateContext) string {
-	byteStr, _ := json.Marshal(a)
-	return b64.StdEncoding.EncodeToString(byteStr)
-}
-
-func UnstringifyContext(a string) TemplateContext {
-	val, _ := b64.StdEncoding.DecodeString(a)
-	var res TemplateContext
-	err := json.Unmarshal(val, &res)
-	if err != nil {
-		log.Print(err)
-	}
-	return res
-}
-
-func getHTMLFromData(res TemplateContext) string {
-	new_temp, _ := template.ParseFiles("template.html")
-	var templated_res bytes.Buffer
-	new_temp.Execute(&templated_res, res)
-	return templated_res.String()
-}
-
-func getCachedHTMLFromData(a []string) string {
-	new_temp, _ := template.ParseFiles("cached.html")
-	var templated_res bytes.Buffer
-	new_temp.Execute(&templated_res,
-		struct{ CachedList []string }{a})
-	return templated_res.String()
-}
-
-func GetOEmbedTw(tw int64, tw_chans chan OEmbedWithId, client *twitter.Client) {
-	statusOembedParams := &twitter.StatusOEmbedParams{ID: tw, MaxWidth: 500}
-	oembed, _, _ := client.Statuses.OEmbed(statusOembedParams)
-	var oembed_id OEmbedWithId
-	oembed_id.ID = tw
-	oembed_id.Tweet = oembed
-	tw_chans <- oembed_id
-}
-
-/*
-* 1. Number of words in total
-* 2. Most liked tweet
-* 3. Most retweeted tweet
-* 4. Total number of tweets
-* 5. Pie chart for tweets by month and tweets by weekday
-*
-* Store in JSON and then regenerate only on request.
- */
+const (
+	CacheKey = "yearReviewTwitter"
+)
 
 func main() {
-
 	months := []string{
 		"January",
 		"February",
@@ -141,12 +95,9 @@ func main() {
 		"Sunday",
 	}
 
-	RED_KEY := "yearReviewTwitter"
-
 	// Ref time: Mon Jan 2 15:04:05 MST 2006
 	begin, _ := time.Parse("2006-01-02", "2019-01-01")
 	end, _ := time.Parse("2006-01-02", "2020-01-01")
-	// begin, _ := time.Parse("2006-01-02", "2017-12-01")
 
 	err := godotenv.Load()
 	if err != nil {
@@ -160,7 +111,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	} else {
-
 		data := os.Getenv("CONSUMER_KEY") + ":" + os.Getenv("CONSUMER_SECRET")
 		b64_token := b64.StdEncoding.EncodeToString([]byte(data))
 
@@ -205,7 +155,6 @@ func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./public"))))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-
 		start_time := time.Now()
 
 		if r.Method == "GET" && r.URL.Path == "/" {
@@ -229,7 +178,7 @@ func main() {
 
 		if r.Method == "GET" && r.URL.Path == "/cached" {
 			if redClientExists {
-				val, err := redClient.HKeys(RED_KEY).Result()
+				val, err := redClient.HKeys(CacheKey).Result()
 				if err != nil {
 					fmt.Fprintf(w, "Couldn't get the list of cached handles from Redis. Error: %v", err)
 				} else {
@@ -258,7 +207,7 @@ func main() {
 			handle = strings.ToLower(handle)
 
 			if redClientExists {
-				val, err := redClient.HGet(RED_KEY, handle).Result()
+				val, err := redClient.HGet(CacheKey, handle).Result()
 				if err == nil && len(val) > 0 {
 					res := UnstringifyContext(val)
 					log.Printf("Retrieved from redis for %s; Serving HTML now", handle)
@@ -273,8 +222,8 @@ func main() {
 			excRP := false
 			trimUser := true
 
-			num_tweets := 0
-			word_count := 0
+			numTweets := 0
+			wordCount := 0
 
 			var maxRT twitter.Tweet
 			var maxFav twitter.Tweet
@@ -333,7 +282,7 @@ func main() {
 					whole_set := last_tw_time.After(begin) && first_tw_time.Before(end)
 
 					if whole_set {
-						num_tweets += len(tweets)
+						numTweets += len(tweets)
 						first_tw_in_period = last_tw
 					}
 
@@ -365,11 +314,11 @@ func main() {
 						}
 
 						if !whole_set {
-							num_tweets++
+							numTweets++
 							first_tw_in_period = tweet
 						}
 
-						word_count += len(strings.Fields(tweet.Text))
+						wordCount += len(strings.Fields(tweet.Text))
 
 						if tweet.RetweetCount > maxRT.RetweetCount {
 							maxRT = tweet
@@ -428,8 +377,8 @@ func main() {
 			}
 
 			data_obj := TemplateContext{
-				num_tweets,
-				word_count,
+				numTweets,
+				wordCount,
 				handle,
 				template.HTML(mft.HTML),
 				template.HTML(mrt.HTML),
@@ -447,7 +396,7 @@ func main() {
 			fmt.Fprint(w, getHTMLFromData(data_obj))
 
 			if redClientExists {
-				err := redClient.HSet(RED_KEY, handle, StringifyContext(data_obj)).Err()
+				err := redClient.HSet(CacheKey, handle, StringifyContext(data_obj)).Err()
 				if err != nil {
 					log.Printf("Couldn't write %s's data to Redis: %v", handle, err)
 				} else {
@@ -464,7 +413,51 @@ func main() {
 		return
 	})
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
+	}
+
 	log.Printf("Server started")
-	log.Printf("Listening on port %s", os.Getenv("PORT"))
-	log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), nil))
+	log.Printf("Listening on port %s", port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
+}
+
+func StringifyContext(a TemplateContext) string {
+	byteStr, _ := json.Marshal(a)
+	return b64.StdEncoding.EncodeToString(byteStr)
+}
+
+func UnstringifyContext(a string) TemplateContext {
+	val, _ := b64.StdEncoding.DecodeString(a)
+	var res TemplateContext
+	err := json.Unmarshal(val, &res)
+	if err != nil {
+		log.Print(err)
+	}
+	return res
+}
+
+func getHTMLFromData(res TemplateContext) string {
+	new_temp, _ := template.ParseFiles("template.html")
+	var templated_res bytes.Buffer
+	new_temp.Execute(&templated_res, res)
+	return templated_res.String()
+}
+
+func getCachedHTMLFromData(a []string) string {
+	new_temp, _ := template.ParseFiles("cached.html")
+	var templated_res bytes.Buffer
+	new_temp.Execute(&templated_res,
+		struct{ CachedList []string }{a})
+	return templated_res.String()
+}
+
+func GetOEmbedTw(tw int64, tw_chans chan OEmbedWithId, client *twitter.Client) {
+	statusOembedParams := &twitter.StatusOEmbedParams{ID: tw, MaxWidth: 500}
+	oembed, _, _ := client.Statuses.OEmbed(statusOembedParams)
+	var oembed_id OEmbedWithId
+	oembed_id.ID = tw
+	oembed_id.Tweet = oembed
+	tw_chans <- oembed_id
 }
