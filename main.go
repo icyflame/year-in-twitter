@@ -4,6 +4,7 @@ import (
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/go-redis/redis"
 	"github.com/icyflame/year-in-twitter/tweet"
+	"github.com/icyflame/year-in-twitter/utils"
 	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
 
@@ -32,15 +33,15 @@ type OEmbedWithId struct {
 }
 
 type TemplateContext struct {
-	NumTweets     int
-	WordCount     int
+	NumTweets     string
+	WordCount     string
 	Handle        string
 	MostFav       template.HTML
 	MostRT        template.HTML
 	FirstTweet    template.HTML
 	LastTweet     template.HTML
-	MostFavCount  int
-	MostRTCount   int
+	MostFavCount  string
+	MostRTCount   string
 	MonthNames    []string
 	MonthValues   []int
 	WeekdayNames  []string
@@ -90,7 +91,6 @@ func main() {
 	var tok BearerToken
 
 	req, err := http.NewRequest("POST", "https://api.twitter.com/oauth2/token", strings.NewReader("grant_type=client_credentials"))
-
 	if err != nil {
 		log.Fatal(err)
 	} else {
@@ -101,9 +101,7 @@ func main() {
 		req.Header.Add("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
 
 		access_tok_client := &http.Client{}
-
 		resp, err := access_tok_client.Do(req)
-
 		if err != nil {
 			log.Print(err)
 		} else {
@@ -112,7 +110,6 @@ func main() {
 				log.Print(err)
 			} else {
 				err := json.Unmarshal(bearer, &tok)
-
 				if err != nil {
 					log.Print(err)
 				} else {
@@ -132,7 +129,7 @@ func main() {
 
 	pong, err := redClient.Ping().Result()
 
-	log.Printf("Redis client connected. Ping response: %v", pong)
+	log.Printf("Redis client connected. Ping response: %v, Ping error: %v", pong, err)
 	redClientExists := err == nil
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./public"))))
@@ -225,7 +222,6 @@ func main() {
 			empty_resp := 0
 
 			for last_tw_time.After(begin) && empty_resp < 10 {
-
 				userTimelineParams := &twitter.UserTimelineParams{
 					ScreenName:      handle,
 					Count:           200,
@@ -360,20 +356,20 @@ func main() {
 			}
 
 			data_obj := TemplateContext{
-				numTweets,
-				wordCount,
-				handle,
-				template.HTML(mft.HTML),
-				template.HTML(mrt.HTML),
-				template.HTML(ftw.HTML),
-				template.HTML(ltw.HTML),
-				maxFav.FavoriteCount,
-				maxRT.RetweetCount,
-				months,
-				monthValues,
-				weekdays,
-				weekdayValues,
-				time.Now().UTC().Format(time.RFC822),
+				NumTweets:     utils.HumanNumber(numTweets),
+				WordCount:     utils.HumanNumber(wordCount),
+				Handle:        handle,
+				MostFav:       template.HTML(mft.HTML),
+				MostRT:        template.HTML(mrt.HTML),
+				FirstTweet:    template.HTML(ftw.HTML),
+				LastTweet:     template.HTML(ltw.HTML),
+				MostFavCount:  utils.HumanNumber(maxFav.FavoriteCount),
+				MostRTCount:   utils.HumanNumber(maxRT.RetweetCount),
+				MonthNames:    months,
+				MonthValues:   monthValues,
+				WeekdayNames:  weekdays,
+				WeekdayValues: weekdayValues,
+				LastUpdated:   time.Now().UTC().Format(time.RFC822),
 			}
 
 			fmt.Fprint(w, getHTMLFromData(data_obj))
