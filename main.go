@@ -22,8 +22,8 @@ import (
 )
 
 type BearerToken struct {
-	Token_Type   string
-	Access_Token string
+	TokenType   string
+	AccessToken string
 }
 
 type OEmbedWithId struct {
@@ -123,7 +123,7 @@ func main() {
 	}
 
 	config := &oauth2.Config{}
-	token := &oauth2.Token{AccessToken: tok.Access_Token}
+	token := &oauth2.Token{AccessToken: tok.AccessToken}
 	httpClient := config.Client(oauth2.NoContext, token)
 	client := twitter.NewClient(httpClient)
 
