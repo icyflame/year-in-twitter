@@ -47,10 +47,20 @@ type TemplateContext struct {
 	WeekdayNames  []string
 	WeekdayValues []int
 	LastUpdated   string
+	ShowWarning   bool
 }
 
 const (
+	// CacheKey is the top-level hashmap key in Redis
 	CacheKey = "yearReviewTwitter"
+
+	// MaxTweets is the maximum number of tweets that can be fetched from the Twitter API
+	MaxTweets = 3200
+
+	// WarningWindow is the difference at which the max number of tweets warning is shown. This is a
+	// percentage value between 1 and 100. 10 => Show warning when (numTweets > 3200 - 10% &&
+	// numTweets < 3200 + 10%)
+	WarningWindow = 10
 )
 
 func main() {
@@ -357,6 +367,7 @@ func main() {
 
 			data_obj := TemplateContext{
 				NumTweets:     utils.HumanNumber(numTweets),
+				ShowWarning:   utils.PercentDiff(numTweets, MaxTweets, WarningWindow),
 				WordCount:     utils.HumanNumber(wordCount),
 				Handle:        handle,
 				MostFav:       template.HTML(mft.HTML),
