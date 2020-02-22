@@ -2,10 +2,9 @@ version: 2
 jobs:
   build:
     docker:
-      - image: golang:1.12-alpine
+      - image: circleci/golang:1.12
     working_directory: /go/src/github.com/icyflame/year-in-twitter
     steps:
       - checkout
-      - run: apk add git gcc
       - run: go get -v -t -d ./...
       - run: go test -v ./...
