@@ -1,0 +1,14 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.12
+    working_directory: /go/src/github.com/icyflame/year-in-twitter
+    steps:
+      - checkout
+      - run: |
+          curl -s https://raw.githubusercontent.com/icyflame/gospec/master/gospec > gospec
+          chmod +x gospec
+      - run: go get -v -t -d ./...
+      # Run tests, don't use colors, print the list of passing tests
+      - run: ./gospec -C -S
