@@ -6,6 +6,6 @@ jobs:
     working_directory: /go/src/github.com/icyflame/year-in-twitter
     steps:
       - checkout
-      - run: apk add git make
+      - run: apk add git gcc
       - run: go get -v -t -d ./...
       - run: go test -v ./...
