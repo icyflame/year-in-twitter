@@ -10,4 +10,5 @@ jobs:
           curl -s https://raw.githubusercontent.com/icyflame/gospec/master/gospec > gospec
           chmod +x gospec
       - run: go get -v -t -d ./...
-      - run: ./gospec
+      # Run tests, don't use colors, print the list of passing tests
+      - run: ./gospec -C -S
