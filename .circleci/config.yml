@@ -20,9 +20,6 @@ jobs:
         working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
         steps:
           - checkout
-
-          - run: |
-              apk add git make
-
+          - run: apk add git make
           - run: go get -v -t -d ./...
           - run: go test -v ./...
